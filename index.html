@@ -115,14 +115,14 @@
 						}
 					}
 				},300);
-			}*/
+			}
 
 			if(isGyro)
 			{
 				controls = new THREE.DeviceOrientationControls(camera, true);
 				controls.connect();
 				controls.update();
-			}
+			}*/
 
 			try {
   				gl = canvas.getContext("experimental-webgl");
@@ -367,10 +367,11 @@
 				}
 
 				renderer.clear();
+				/*
 				if(isGyro)
 				{
 					controls.update();
-				}
+				}*/
 				renderer.render( scene, camera );
 
 				//console.log(timeRatio);
