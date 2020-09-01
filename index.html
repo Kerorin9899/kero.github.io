@@ -30,18 +30,102 @@
 	</head>
 	<body>
 		<script src="three.js"></script>
+		<script src="DeviceOrientationControls.js"></script>
 		<script>
+			
 			
 			var pi = 3.141592;
 			var f = 0;
 			
+			var fps;
 			
 			const canvas = document.createElement("canvas");
 			let gl;
 
+			//var isAndoroid = false;
+			//var isIOS = false;
+			/*
+			if(navigator.userAgent.indexOf("Android") != -1)
+			{
+				isAndoroid = true;
+			}
+			else if(/(iPad|iPhone|iPod)/g.test(navigator.userAgent))
+			{
+				isIOS = true;
+			}
+			*/
+
+
+			var isGyro=false;
+			if((window.DeviceOrientationEvent)&&('ontouchstart' in window)){
+				isGyro=true;
+			}
+
+			/*
+			if(isAndroid || isIOS)
+			{
+				window.addEventListener("deviceorientation",setOrientationControls, true);
+			}
+			else
+			{
+				
+			}*/
+
+			var controls;
+			var resGyro=false;
+
+			if(isGyro)
+			{
+				window.addEventListener("deviceorientation",doGyro,false);
+				function doGyro(){
+					resGyro=true;
+					window.removeEventListener("deviceorientation",doGyro,false);
+				}
+
+				//数秒後に判定
+				setTimeout(function(){
+					//ジャイロが動いた
+					if(resGyro){
+						//setCanvas();
+
+					//ジャイロ持ってるくせに動かなかった
+					}else{
+
+						const requestDeviceOrientationPermission = () => {
+						if (
+							DeviceOrientationEvent &&
+							typeof DeviceOrientationEvent.requestPermission === 'function'
+						) {
+							// iOS 13+ の Safari
+							// 許可を取得
+							DeviceOrientationEvent.requestPermission()
+							.then(permissionState => {
+							if (permissionState === 'granted') {
+								// 許可を得られた場合
+							} else {
+								// 許可を得られなかった場合の処理
+								isGyro = false;
+							}
+							})
+							.catch(console.error) // https通信でない場合などで許可を取得できなかった場合
+							} else {
+								// 上記以外のブラウザ
+								isGyro = false;
+							}
+						}
+					}
+				},300);
+			}
+
+			if(isGyro)
+			{
+				controls = new THREE.DeviceOrientationControls(camera, true);
+				controls.connect();
+				controls.update();
+			}
+
 			try {
   				gl = canvas.getContext("experimental-webgl");
-
  				//ドライバー情報を取得
  				const ext = gl.getExtension("WEBGL_debug_renderer_info");
 
@@ -51,14 +135,13 @@
  				   renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
  				}
 			} catch (e) {
-  				// WebGL未対応の場合
+  			// WebGL未対応の場合
   				gl = null;
   				renderer = "";
 			}
 			
 			var result = (renderer.match(/GeForce/) != null) || (renderer.match(/Radeon/) != null);
 
-			var fps;
 			if(result)
 			{
 				fps = 1 / 60;
@@ -67,7 +150,6 @@
 			{
 				fps = 1 / 30;
 			}
-			
 
 			/* renderer(レンダラー)の作成　*/
 			var renderer = new THREE.WebGLRenderer();
@@ -120,7 +202,6 @@
 			torus.position.y = 100;
 			torus.position.z = - 100;
 			torus.position.x = -300;
-
 			
 			/* camera(カメラ)の位置設定　*/
 			camera.position.y = 20 * camera.aspect;
@@ -236,9 +317,9 @@
 					camera.position.z -= fps * dz;
 				}
 
-				if(camera.position.z < 500)
+				if(camera.position.z < 550)
 				{
-					camera.position.z = 500;
+					camera.position.z = 550;
 				}
 
 				if(camera.position.z > 800)
@@ -286,6 +367,10 @@
 				}
 
 				renderer.clear();
+				if(isGyro)
+				{
+					controls.update();
+				}
 				renderer.render( scene, camera );
 
 				//console.log(timeRatio);
