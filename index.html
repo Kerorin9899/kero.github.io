@@ -1,0 +1,300 @@
+<html>
+	<head>
+		<title>Mycom Test</title>
+    	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+    	<meta charset="UTF-8">
+		<style>
+			html {
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			body { 
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				padding: 0;
+				border: 0;
+				text-align: center;
+				margin-left: auto;
+				margin-right: auto; 
+			}
+			#console {
+				margin-left: auto;
+				margin-right: auto;
+				border: 0;
+				padding: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="three.js"></script>
+		<script>
+			
+			var pi = 3.141592;
+			var f = 0;
+			
+			
+			const canvas = document.createElement("canvas");
+			let gl;
+
+			try {
+  				gl = canvas.getContext("experimental-webgl");
+
+ 				//ドライバー情報を取得
+ 				const ext = gl.getExtension("WEBGL_debug_renderer_info");
+
+ 				if (!ext) {
+ 				   renderer = "";
+				} else {
+ 				   renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+ 				}
+			} catch (e) {
+  				// WebGL未対応の場合
+  				gl = null;
+  				renderer = "";
+			}
+			
+			var result = (renderer.match(/GeForce/) != null) || (renderer.match(/Radeon/) != null);
+
+			var fps;
+			if(result)
+			{
+				fps = 1 / 60;
+			}
+			else
+			{
+				fps = 1 / 30;
+			}
+			
+
+			/* renderer(レンダラー)の作成　*/
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.domElement.id = 'console';
+			renderer.domElement.style.zIndex = 0;
+			document.body.appendChild( renderer.domElement);
+
+			/* scene(シーン)の作成 */
+			var scene = new THREE.Scene();
+
+			/* camera(カメラ)の作成 */
+			var camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 10000 );
+			
+			/* object(オブジェクト)の作成 */
+			var geometry = new THREE.BoxGeometry( 100, 100, 100);
+			const material = new THREE.MeshStandardMaterial( { color: 0x00ff00 } );
+			var cube = new THREE.Mesh( geometry, material );
+			scene.add( cube );
+
+			var geometry2 = new THREE.BoxGeometry(1000, 1, 1000);
+			const material2 = new THREE.MeshStandardMaterial( { color: 0xffffff } );
+			var cube2 = new THREE.Mesh( geometry2, material2 );
+			scene.add( cube2 );
+
+			cube2.position.y = - 100;
+
+			var geometry3 = new THREE.SphereGeometry(60 , 36, 36);
+			var material3 = new THREE.MeshStandardMaterial({color: 0x00f0ff});
+			var sphere = new THREE.Mesh(geometry3, material3);
+			scene.add(sphere);
+			sphere.position.x = 200;
+			sphere.position.z = -200;
+
+			const geo = new THREE.CylinderGeometry(200, 200, 700, 32 );
+			const mate = new THREE.MeshStandardMaterial( {color: 0xf0f0f0} );
+			const cyl = new THREE.Mesh( geo, mate );
+			scene.add( cyl );
+
+			cyl.position.x = 700;
+			cyl.position.z = - 1000;
+			cyl.position.y = 200;
+
+			const geo2 = new THREE.TorusGeometry( 100, 20, 32, 100 );
+			const mate2 = new THREE.MeshStandardMaterial( { color: 0xffff00 } , metalness = 1.0);
+			const torus = new THREE.Mesh( geo2, mate2 );
+			scene.add( torus );
+
+			torus.position.y = 100;
+			torus.position.z = - 100;
+			torus.position.x = -300;
+
+			
+			/* camera(カメラ)の位置設定　*/
+			camera.position.y = 20 * camera.aspect;
+			camera.position.z = 400 * camera.aspect;
+			camera.rotation.x = - Math.atan(camera.position.y / camera.position.z);
+
+			// 平行光源
+  			const light = new THREE.DirectionalLight(0xffffff, 2);
+  			light.intensity = 2; // 光の強さを倍に
+			light.position.set(1, 1, 1);
+			light.castShadow = true;
+ 			// シーンに追加
+ 			scene.add(light);
+
+			var light2 = new THREE.AmbientLight(0x333333);
+			scene.add(light2);
+
+			window.addEventListener('resize', function () {
+				renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight );
+				camera.aspect = window.innerWidth / innerHeight;
+				camera.updateProjectionMatrix();
+            }, false);
+
+			var mouseX, mouseY;
+			var onmouse = 0;
+			var vecx = 0;
+			var vecy = 0;
+			var lt = 1;
+			var accx = 0;
+			var accy = 0;
+			var disx = - camera.rotation.x;
+			var disy = - camera.rotation.y;
+
+			window.onmousemove = function(e) {
+				if(e)
+				{
+					mouseX = e.pageX;
+					mouseY = e.pageY;
+				}
+				else 
+				{
+     				mouseX = event.pageX + document.body.scrollLeft;
+     				mouseY = event.pageY + document.body.scrollTop;
+    			}
+
+				onmouse = 1;
+			};
+
+			window.onmouseout = function(e) {
+				lt = 1;
+				onmouse = 0;
+				accx = 0;
+				accy = 0;
+				vecx = (vecx - camera.rotation.x);
+				vecy = (vecy - camera.rotation.y);
+			};
+
+			var time = 0;
+			var timeRatio = 0;
+
+			function updateTimeRatio()
+			{
+				const lastTime = time;
+				if(lastTime > 0)
+				{
+					const fps60 = 1000 / 60;
+					const dTime = new Date().getTime() - lastTime;
+					timeRatio = dTime / fps60 / 60;
+				}
+
+				time = new Date().getTime();
+			}
+
+			function testf()
+			{
+				sphere.position.y = 100 * Math.sin(f * pi);
+				torus.rotation.y += fps;
+
+				console.log(torus.rotation.z);
+			}
+
+			function testphi()
+			{
+
+			}
+
+			/* 繰り返しの処理　*/
+			var animate = function () {
+
+				f += fps;
+				
+				//cube.position.x = 100 * Math.sin(f * pi);
+				//cube.position.y = 100 * Math.cos(f * pi);
+				testf();
+
+				cube.rotation.x += fps;
+				cube.rotation.y += fps;
+
+				var y = 90 * (1 / camera.aspect) * 0.5;
+				var z = 200 * camera.aspect;
+
+				var dy = camera.position.y - y;
+				var dz = camera.position.z - z;
+
+				if(dy != 0)
+				{
+					camera.position.y -= fps * dy * 1.9;
+				}
+
+				if(dz != 0)
+				{
+					camera.position.z -= fps * dz;
+				}
+
+				if(camera.position.z < 500)
+				{
+					camera.position.z = 500;
+				}
+
+				if(camera.position.z > 800)
+				{
+					camera.position.z = 800;
+				}
+
+				console.log(camera.position.y, camera.position.z);
+
+				var centerpoint = [window.innerWidth / 2, window.innerHeight / 2];
+
+				if(onmouse)
+				{
+					var ry = - Math.atan((centerpoint[0] - mouseX) / camera.position.z) * 0.08;
+					var rx = - Math.atan((centerpoint[1] - mouseY) / camera.position.z) * 0.08;
+
+					var drx = camera.rotation.x - rx;
+					var dry = camera.rotation.y - ry;
+
+					if(drx != 0)
+					{
+						camera.rotation.x -= fps * drx;
+					}
+
+					if(dry != 0)
+					{
+						camera.rotation.y -= fps * dry;
+					}
+				}
+				else
+				{
+					if(lt > 0)
+					{
+						disx = - camera.rotation.x;
+						disy = - camera.rotation.y;
+						accx = (disx - vecx * lt) * 2 / lt * lt;
+						vecx += accx * timeRatio;
+						accy = (disy - vecy * lt) * 2 / lt * lt;
+						vecy += accy * timeRatio;
+						lt -= timeRatio;
+
+						camera.rotation.x += vecx * timeRatio;
+						camera.rotation.y += vecy * timeRatio;
+					}
+				}
+
+				renderer.clear();
+				renderer.render( scene, camera );
+
+				//console.log(timeRatio);
+
+				requestAnimationFrame( animate );
+				updateTimeRatio();
+			};
+			animate();
+			
+		</script>
+	</body>
+</html>
