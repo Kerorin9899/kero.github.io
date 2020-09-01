@@ -30,10 +30,7 @@
 	</head>
 	<body>
 		<script src="three.js"></script>
-		<script src="DeviceOrientationControls.js"></script>
 		<script>
-			
-			
 			var pi = 3.141592;
 			var f = 0;
 			
@@ -339,14 +336,20 @@
 					var drx = camera.rotation.x - rx;
 					var dry = camera.rotation.y - ry;
 
-					if(drx != 0)
+					if(camera.rotation.x <= 2 && camera.rotation.x >= -2)
 					{
-						camera.rotation.x -= fps * drx;
+						if(drx != 0)
+						{
+							camera.rotation.x -= fps * drx;
+						}
 					}
 
-					if(dry != 0)
+					if(camera.rotation.y <= 2 && camera.rotation.y >= -2)
 					{
-						camera.rotation.y -= fps * dry;
+						if(dry != 0)
+						{
+							camera.rotation.y -= fps * dry;
+						}
 					}
 				}
 				else
