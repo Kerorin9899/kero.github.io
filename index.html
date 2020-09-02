@@ -86,14 +86,16 @@
 			}
 
 			//console.log();
+			var isGyro = false;
+			var dir,fb,lr
 
 			function deviceOrientation(e)
 			{
 				//e.preventDefault();
-
-				var dir = e.alpha;
-				var fb = e.beta;
-				var lr = e.gamma;
+				isGyro = true;
+				dir = e.alpha;
+				fb = e.beta;
+				lr = e.gamma;
 			}
 
 			try {
@@ -342,47 +344,55 @@
 
 				//console.log(camera.position.y, camera.position.z);
 
-				var centerpoint = [window.innerWidth / 2, window.innerHeight / 2];
-
-				if(onmouse)
+				if(!isGyro)
 				{
-					var ry = - Math.atan((centerpoint[0] - mouseX) / camera.position.z) * 0.08;
-					var rx = - Math.atan((centerpoint[1] - mouseY) / camera.position.z) * 0.08;
 
-					var drx = camera.rotation.x - rx;
-					var dry = camera.rotation.y - ry;
+					var centerpoint = [window.innerWidth / 2, window.innerHeight / 2];
 
-					if(camera.rotation.x <= 2 && camera.rotation.x >= -2)
+					if(onmouse)
 					{
-						if(drx != 0)
+						var ry = - Math.atan((centerpoint[0] - mouseX) / camera.position.z) * 0.08;
+						var rx = - Math.atan((centerpoint[1] - mouseY) / camera.position.z) * 0.08;
+
+						var drx = camera.rotation.x - rx;
+						var dry = camera.rotation.y - ry;
+
+						if(camera.rotation.x <= 2 && camera.rotation.x >= -2)
 						{
-							camera.rotation.x -= fps * drx;
+							if(drx != 0)
+							{
+								camera.rotation.x -= fps * drx;
+							}
+						}
+
+						if(camera.rotation.y <= 2 && camera.rotation.y >= -2)
+						{
+							if(dry != 0)
+							{
+								camera.rotation.y -= fps * dry;
+							}
 						}
 					}
-
-					if(camera.rotation.y <= 2 && camera.rotation.y >= -2)
+					else
 					{
-						if(dry != 0)
+						if(lt > 0)
 						{
-							camera.rotation.y -= fps * dry;
+							disx = - camera.rotation.x;
+							disy = - camera.rotation.y;
+							accx = (disx - vecx * lt) * 2 / lt * lt;
+							vecx += accx * timeRatio;
+							accy = (disy - vecy * lt) * 2 / lt * lt;
+							vecy += accy * timeRatio;
+							lt -= timeRatio;
+
+							camera.rotation.x += vecx * timeRatio;
+							camera.rotation.y += vecy * timeRatio;
 						}
 					}
 				}
 				else
 				{
-					if(lt > 0)
-					{
-						disx = - camera.rotation.x;
-						disy = - camera.rotation.y;
-						accx = (disx - vecx * lt) * 2 / lt * lt;
-						vecx += accx * timeRatio;
-						accy = (disy - vecy * lt) * 2 / lt * lt;
-						vecy += accy * timeRatio;
-						lt -= timeRatio;
-
-						camera.rotation.x += vecx * timeRatio;
-						camera.rotation.y += vecy * timeRatio;
-					}
+					camera.rotation.set(dir, fb, lr);
 				}
 
 				renderer.clear();
