@@ -81,13 +81,16 @@
 				}
 				else
 				{
-					window.addEventListener("deviceorientation", deviceOrientation);
+					window.addEventListener("deviceorientation", deviceOrientation());
 				}
 			}
 
 			//console.log();
 			var isGyro = false;
-			var dir,fb,lr
+			var dir,fb,lr;
+			dir = 0;
+			fb = 0;
+			lr = 0;
 
 			function deviceOrientation(e)
 			{
@@ -344,10 +347,7 @@
 
 				//console.log(camera.position.y, camera.position.z);
 
-				if(!isGyro)
-				{
-
-					var centerpoint = [window.innerWidth / 2, window.innerHeight / 2];
+				var centerpoint = [window.innerWidth / 2, window.innerHeight / 2];
 
 					if(onmouse)
 					{
@@ -389,11 +389,6 @@
 							camera.rotation.y += vecy * timeRatio;
 						}
 					}
-				}
-				else
-				{
-					camera.rotation.set(dir, fb, lr);
-				}
 
 				renderer.clear();
 				/*
