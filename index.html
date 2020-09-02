@@ -26,11 +26,17 @@
 				border: 0;
 				padding: 0;
 			}
+			header{
+
+			}
 		</style>
 	</head>
 	<body>
+		<div id = "gyro">	
+		</div>
 		<script src="three.js"></script>
 		<script>
+
 			var pi = 3.141592;
 			var f = 0;
 			
@@ -39,87 +45,56 @@
 			const canvas = document.createElement("canvas");
 			let gl;
 
-			//var isAndoroid = false;
-			//var isIOS = false;
-			/*
-			if(navigator.userAgent.indexOf("Android") != -1)
-			{
-				isAndoroid = true;
-			}
-			else if(/(iPad|iPhone|iPod)/g.test(navigator.userAgent))
-			{
-				isIOS = true;
-			}
-			*/
-
-			/*
-			var isGyro=false;
-			if((window.DeviceOrientationEvent)&&('ontouchstart' in window)){
-				isGyro=true;
-			}*/
-
-			/*
-			if(isAndroid || isIOS)
-			{
-				window.addEventListener("deviceorientation",setOrientationControls, true);
-			}
-			else
-			{
-				
-			}*/
-
 			var controls;
 			var resGyro=false;
-			/*
-			if(isGyro)
+			
+			//ジャイロの使用許可
+			function RequestGyroSensor()
 			{
-				window.addEventListener("deviceorientation",doGyro,false);
-				function doGyro(){
-					resGyro=true;
-					window.removeEventListener("deviceorientation",doGyro,false);
-				}
-
-				//数秒後に判定
-				setTimeout(function(){
-					//ジャイロが動いた
-					if(resGyro){
-						//setCanvas();
-
-					//ジャイロ持ってるくせに動かなかった
-					}else{
-
-						const requestDeviceOrientationPermission = () => {
-						if (
-							DeviceOrientationEvent &&
-							typeof DeviceOrientationEvent.requestPermission === 'function'
-						) {
-							// iOS 13+ の Safari
-							// 許可を取得
-							DeviceOrientationEvent.requestPermission()
-							.then(permissionState => {
-							if (permissionState === 'granted') {
-								// 許可を得られた場合
-							} else {
-								// 許可を得られなかった場合の処理
-								isGyro = false;
-							}
-							})
-							.catch(console.error) // https通信でない場合などで許可を取得できなかった場合
-							} else {
-								// 上記以外のブラウザ
-								isGyro = false;
-							}
-						}
+				DeviceOrientationEvent.requestPermission().then(function(responce){
+					if(responce === 'granted')
+					{
+						window.addEventListener("deviceorientation", deviceOrientation);
 					}
-				},300);
+				}).catch(function(e){
+					console.log(e);
+				});
 			}
 
-			if(isGyro)
+			if(window.DeviceOrientationEvent)
 			{
-				controls = new THREE.DeviceOrientationControls(camera, true);
-				controls.connect();
-				controls.update();
-			}*/
+				if(DeviceOrientationEvent.requestPermission && typeof DeviceOrientationEvent.requestPermission === 'function')
+				{
+					//var banner = '<div  style="z-index: 1; position: absolute; width: 100%; background-color: rgb(0, 0, 0);" onclick="RequestGyroSensor();" id="sensorrequest"><p style="color: rgb(0, 0, 255);">センサーの有効化</p></div>';
+					var target = document.getElementById("gyro");
+					var p = document.createElement("p");
+					p.style.color = "blue";
+					p.innerText = "センサーの有効化";
+
+					target.style.zIndex = "1px";
+					target.style.position = "absolute";
+					target.style.width = "100%";
+					target.style.backgroundColor = "black";
+					target.onclick = RequestGyroSensor();
+
+					target.appendChild(p);
+				}
+				else
+				{
+					window.addEventListener("deviceorientation", deviceOrientation);
+				}
+			}
+
+			//console.log();
+
+			function deviceOrientation(e)
+			{
+				//e.preventDefault();
+
+				var dir = e.alpha;
+				var fb = e.beta;
+				var lr = e.gamma;
+			}
 
 			try {
   				gl = canvas.getContext("experimental-webgl");
@@ -205,6 +180,47 @@
 			camera.position.z = 400 * camera.aspect;
 			camera.rotation.x = - Math.atan(camera.position.y / camera.position.z);
 
+			/*
+			import { Sky } from './Sky.js';
+	 
+			//Sky
+			const sky = new Sky();
+			sky.scale.setScalar(450000);
+			scene.add(sky);
+			 
+			//Skyの設定
+			const sky_uniforms = sky.material.uniforms;
+			sky_uniforms['turbidity'].value = 10;
+			sky_uniforms['rayleigh'].value = 2;
+			sky_uniforms['luminance'].value = 1;
+			sky_uniforms['mieCoefficient'].value = 0.005;
+			sky_uniforms['mieDirectionalG'].value = 0.8;
+			 
+			//Sun
+			const sunSphere = new THREE.Mesh(
+			    new THREE.SphereBufferGeometry(200,16,8),
+			    new THREE.MeshBasicMaterial({color:0xFFFFFF})
+			);
+			scene.add(sunSphere);
+			 
+			//Sunの設定
+			const sun_uniforms = sky.material.uniforms;
+			sun_uniforms['turbidity'].value = 10;
+			sun_uniforms['rayleigh'].value = 2;
+			sun_uniforms['mieCoefficient'].value = 0.005;
+			sun_uniforms['mieDirectionalG'].value = 0.8;
+			sun_uniforms['luminance'].value = 1;
+			 
+			const theta = Math.PI * ( -0.01 );
+			const phi = 2 * Math.PI * ( -0.25 );
+			const distance = 400000;
+			sunSphere.position.x = distance * Math.cos(phi);
+			sunSphere.position.y = distance * Math.sin(phi) * Math.sin(theta);
+			sunSphere.position.z = distance * Math.sin(phi) * Math.cos(theta);
+			sunSphere.visible = true;
+			sun_uniforms['sunPosition'].value.copy(sunSphere.position);
+			*/
+
 			// 平行光源
   			const light = new THREE.DirectionalLight(0xffffff, 2);
   			light.intensity = 2; // 光の強さを倍に
@@ -278,7 +294,7 @@
 				sphere.position.y = 100 * Math.sin(f * pi);
 				torus.rotation.y += fps;
 
-				console.log(torus.rotation.z);
+				//console.log(torus.rotation.z);
 			}
 
 			function testphi()
@@ -324,7 +340,7 @@
 					camera.position.z = 800;
 				}
 
-				console.log(camera.position.y, camera.position.z);
+				//console.log(camera.position.y, camera.position.z);
 
 				var centerpoint = [window.innerWidth / 2, window.innerHeight / 2];
 
