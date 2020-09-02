@@ -26,8 +26,8 @@
 				border: 0;
 				padding: 0;
 			}
-			#gyro{
-				cursor: pointer;
+			header{
+
 			}
 		</style>
 	</head>
@@ -73,32 +73,27 @@
 
 					target.style.zIndex = "1px";
 					target.style.position = "absolute";
-					target.style.width = "50%";
-					target.style.backgroundColor = "white";
+					target.style.width = "100%";
+					target.style.backgroundColor = "black";
 					target.onclick = RequestGyroSensor();
 
 					target.appendChild(p);
 				}
 				else
 				{
-					window.addEventListener("deviceorientation", deviceOrientation());
+					window.addEventListener("deviceorientation", deviceOrientation);
 				}
 			}
 
 			//console.log();
-			var isGyro = false;
-			var dir,fb,lr;
-			dir = 0;
-			fb = 0;
-			lr = 0;
 
 			function deviceOrientation(e)
 			{
 				//e.preventDefault();
-				isGyro = true;
-				dir = e.alpha;
-				fb = e.beta;
-				lr = e.gamma;
+
+				var dir = e.alpha;
+				var fb = e.beta;
+				var lr = e.gamma;
 			}
 
 			try {
@@ -349,46 +344,46 @@
 
 				var centerpoint = [window.innerWidth / 2, window.innerHeight / 2];
 
-					if(onmouse)
+				if(onmouse)
+				{
+					var ry = - Math.atan((centerpoint[0] - mouseX) / camera.position.z) * 0.08;
+					var rx = - Math.atan((centerpoint[1] - mouseY) / camera.position.z) * 0.08;
+
+					var drx = camera.rotation.x - rx;
+					var dry = camera.rotation.y - ry;
+
+					if(camera.rotation.x <= 2 && camera.rotation.x >= -2)
 					{
-						var ry = - Math.atan((centerpoint[0] - mouseX) / camera.position.z) * 0.08;
-						var rx = - Math.atan((centerpoint[1] - mouseY) / camera.position.z) * 0.08;
-
-						var drx = camera.rotation.x - rx;
-						var dry = camera.rotation.y - ry;
-
-						if(camera.rotation.x <= 2 && camera.rotation.x >= -2)
+						if(drx != 0)
 						{
-							if(drx != 0)
-							{
-								camera.rotation.x -= fps * drx;
-							}
-						}
-
-						if(camera.rotation.y <= 2 && camera.rotation.y >= -2)
-						{
-							if(dry != 0)
-							{
-								camera.rotation.y -= fps * dry;
-							}
+							camera.rotation.x -= fps * drx;
 						}
 					}
-					else
-					{
-						if(lt > 0)
-						{
-							disx = - camera.rotation.x;
-							disy = - camera.rotation.y;
-							accx = (disx - vecx * lt) * 2 / lt * lt;
-							vecx += accx * timeRatio;
-							accy = (disy - vecy * lt) * 2 / lt * lt;
-							vecy += accy * timeRatio;
-							lt -= timeRatio;
 
-							camera.rotation.x += vecx * timeRatio;
-							camera.rotation.y += vecy * timeRatio;
+					if(camera.rotation.y <= 2 && camera.rotation.y >= -2)
+					{
+						if(dry != 0)
+						{
+							camera.rotation.y -= fps * dry;
 						}
 					}
+				}
+				else
+				{
+					if(lt > 0)
+					{
+						disx = - camera.rotation.x;
+						disy = - camera.rotation.y;
+						accx = (disx - vecx * lt) * 2 / lt * lt;
+						vecx += accx * timeRatio;
+						accy = (disy - vecy * lt) * 2 / lt * lt;
+						vecy += accy * timeRatio;
+						lt -= timeRatio;
+
+						camera.rotation.x += vecx * timeRatio;
+						camera.rotation.y += vecy * timeRatio;
+					}
+				}
 
 				renderer.clear();
 				/*
