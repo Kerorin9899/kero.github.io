@@ -80,6 +80,17 @@
 			}
 
 			/*
+			.disp-img{
+				position: absolute;
+				background-image: url(images/mycom_front.png);
+				background-color: rgb(200,200,200);
+				background-repeat: no-repeat;
+				width: 100%;
+				height: 100%;
+				z-index: 1;
+			}*/
+
+			/*
 			.stalker_class{
 				content:'';
 				display: block;
@@ -101,6 +112,7 @@
 		</style>
 	</head>
 	<body>
+		<div class = 'disp-img'></div>
 		<div id = "gyro"></div>
 		<div class = 'stalker'></div>
 		<script src="three.js"></script>
@@ -215,7 +227,7 @@
 			var geometry = new THREE.BoxGeometry( 10, 10, 10);
 			const material = new THREE.MeshStandardMaterial( { color: 0x00ff00 } );
 			var cube = new THREE.Mesh( geometry, material );
-			//scene.add( cube );
+			scene.add( cube );
 
 			cube.castShadow = true;
 			cube.receiveShadow = true;
@@ -341,6 +353,13 @@
 
 
 			//　ミラー設定
+			cube_mirror = new THREE.Mesh(geometry, material);
+			cube_mirror.position.y = offset*2;
+
+			cube_mirror.rotation.x = Math.PI;
+			cube_mirror.rotation.y = Math.PI * 2;
+			scene.add(cube_mirror);
+
 			sphere_mirror = new THREE.Mesh(geometry3, material3);
 			sphere_mirror.position.x = 20;
 			sphere_mirror.position.z = -20;
@@ -549,6 +568,9 @@
 
 				cube.rotation.x += fps;
 				cube.rotation.y += fps;
+
+				cube_mirror.rotation.x -= fps;
+				cube_mirror.rotation.y -= fps;
 
 				var y = 9 * (1 / camera.aspect) * 0.5;
 				var z = 20 * camera.aspect;
