@@ -118,7 +118,7 @@
 		<script src="three.js"></script>
 		<script src="Three/OBJLoader.js"></script>
 		<script src="Three/MTLLoader.js"></script>
-		<script src=""></script>
+		<script src="Three/Reflector.js"></script>
 		<script>
 
 			var pi = 3.141592;
@@ -217,8 +217,9 @@
 
 			/* scene(シーン)の作成 */
 			var scene = new THREE.Scene();
-			scene.background = new THREE.Color(0x000000);
-			scene.fog = new THREE.Fog(0x000000, 10, 300);
+			scene.background = new THREE.Color(0x040020);
+			//scene.fog = new THREE.Fog(0x000000,10, 1000);
+			scene.fog = new THREE.FogExp2(0x040020,0.010);
 
 			/* camera(カメラ)の作成 */
 			var camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 1500);
@@ -316,6 +317,19 @@
 						},onProgress,onError);
 				});
 			var obj_mirror = new THREE.Mesh();
+
+			//Mirror
+			var mirrorgeo = new THREE.PlaneBufferGeometry(10000,10000)
+			var groundmirror = new THREE.Reflector(mirrorgeo, {
+				clipBias: 0.03,
+				textureWidth: window.innerWidth * window.devicePixelRatio,
+				textureHeight: window.innerHeight * window.devicePixcelRatio,
+				color: 0x777777
+			});
+			groundmirror.rotateX( - Math.PI / 2);
+			groundmirror.position.z = -50
+			groundmirror.rotation.x += pi / 2;
+			scene.add( groundmirror );
 
 			// plane
 			var geometry2 = new THREE.PlaneBufferGeometry(10000, 10000);
@@ -674,6 +688,7 @@
 				deltatime = performance.now() - starttime;
 				deltatime = deltatime / 20.0;
 				fps = deltatime;
+				fps = 1 / 60
 				// total += fps;
 				// console.log(total)
 
